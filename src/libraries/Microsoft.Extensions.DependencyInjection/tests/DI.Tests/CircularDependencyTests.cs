@@ -211,11 +211,12 @@ public class CircularDependencyTests {
 
 			using IServiceScope serviceScope = serviceProvider.CreateScope();
 			InvalidOperationException invalidOperationException = Assert.Throws<InvalidOperationException>(() => { var dummy = serviceScope.ServiceProvider.GetService<IDummy>(); });
-			Assert.Equal(invalidOperationException.Message, SR.Format(SR.CircularDependencyException, typeof(IDummy)));
+			Assert.Equal(invalidOperationException.Message, SR.Format(SR.CircularDependencyException, typeof(ServiceWithDependency)));
 		});
 
 		Task firstTask = await Task.WhenAny([task, Task.Delay(100)]);
 		Assert.Same(task, firstTask);
+		await task;
 	}
 
 	private class ServiceWithDependency(IDummy dependency) : IDummy {
