@@ -505,6 +505,10 @@ internal sealed class CallSiteFactory : IServiceProviderIsService, IServiceProvi
 				}
 			}
 
+			if (callSite is null && serviceIdentifier.ServiceKey is { } key) {
+				callSite = GetCallSite(new ServiceIdentifier(key, parameterType), callSiteChain);
+			}
+
 			callSite ??= GetCallSite(ServiceIdentifier.FromServiceType(parameterType), callSiteChain);
 
 			if (callSite == null && ParameterDefaultValue.TryGetDefaultValue(parameters[index], out object? defaultValue)) {
