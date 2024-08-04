@@ -536,7 +536,6 @@ public abstract partial class KeyedDependencyInjectionSpecificationTests {
 	[Fact]
 	public void KeyedServicesShouldPassKeyWhenResolving() {
 		ServiceCollection services = new();
-		// registration is still clean
 		services.AddKeyedSingleton<A>("first");
 		services.AddKeyedSingleton<B>("first");
 		IServiceProvider serviceProvider = CreateServiceProvider(services);
@@ -546,7 +545,6 @@ public abstract partial class KeyedDependencyInjectionSpecificationTests {
 	[Fact]
 	public void KeyedServicesShouldPassKeyAndFallbackToUnkeyedWhenResolving() {
 		ServiceCollection services = new();
-		// registration is still clean
 		services.AddSingleton<A>();
 		services.AddKeyedSingleton<B>("first");
 		IServiceProvider serviceProvider = CreateServiceProvider(services);
@@ -556,14 +554,12 @@ public abstract partial class KeyedDependencyInjectionSpecificationTests {
 	[Fact]
 	public void KeyedServicesShouldPassKeyFailWhenKeyConflictsWhenResolving() {
 		ServiceCollection services = new();
-		// registration is still clean
 		services.AddKeyedSingleton<A>("second");
 		services.AddKeyedSingleton<B>("first");
 		IServiceProvider serviceProvider = CreateServiceProvider(services);
 		Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredKeyedService<B>("first"));
 	}
 
-	// classes are still fairly clean
 	private class A() { }
 
 	private class B(A a) { public A A { get; } = a; }
