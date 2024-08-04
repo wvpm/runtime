@@ -1022,8 +1022,8 @@ public abstract class ServiceProviderContainerTests : DependencyInjectionSpecifi
 	}
 
 	private class FakeOpenGenericServiceWithTwoTypeArguments<TVal1, TVal2> : IFakeOpenGenericService<TVal1> {
-		public TVal1? Value { get; }
-		public TVal2? Value2 { get; }
+		public TVal1 Value { get; } = default!;
+		public TVal2 Value2 { get; } = default!;
 	}
 
 	private class Disposable : IDisposable {

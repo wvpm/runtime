@@ -4,5 +4,5 @@
 namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 
 public interface IFakeOpenGenericService<out TValue> {
-	TValue? Value { get; }
+	TValue Value { get; }
 }
