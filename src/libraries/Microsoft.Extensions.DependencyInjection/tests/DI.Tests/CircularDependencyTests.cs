@@ -201,9 +201,11 @@ public class CircularDependencyTests {
 	[InlineData(ServiceLifetime.Transient)]
 	public async Task CircularDependencyDoesNotCauseDeadlock(ServiceLifetime serviceLifetime) {
 		Task task = Task.Run(() => {
-			ServiceCollection serviceCollection = new();
-			serviceCollection.Add(new ServiceDescriptor(typeof(ServiceWithDependency), typeof(ServiceWithDependency), serviceLifetime));
-			serviceCollection.Add(new ServiceDescriptor(typeof(IDummy), p => p.GetRequiredService<ServiceWithDependency>(), serviceLifetime));
+			ServiceCollection serviceCollection =
+			[
+				new ServiceDescriptor(typeof(ServiceWithDependency), typeof(ServiceWithDependency), serviceLifetime),
+				new ServiceDescriptor(typeof(IDummy), p => p.GetRequiredService<ServiceWithDependency>(), serviceLifetime),
+			];
 			using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions() {
 				ValidateOnBuild = true,
 				ValidateScopes = true
