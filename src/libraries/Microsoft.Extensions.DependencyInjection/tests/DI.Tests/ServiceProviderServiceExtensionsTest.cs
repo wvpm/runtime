@@ -7,303 +7,274 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Extensions.DependencyInjection
-{
-    public class ServiceProviderExtensionsTest
-    {
-        [Fact]
-        public void GetService_Returns_CorrectService()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(1);
+namespace Microsoft.Extensions.DependencyInjection;
 
-            // Act
-            var service = serviceProvider.GetService<IFoo>();
+public class ServiceProviderExtensionsTest {
+	[Fact]
+	public void GetService_Returns_CorrectService() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(1);
 
-            // Assert
-            Assert.IsType<Foo1>(service);
-        }
+		// Act
+		var service = serviceProvider.GetService<IFoo>();
 
-        [Fact]
-        public void ISupportRequiredService_GetRequiredService_Returns_CorrectService()
-        {
-            // Arrange
-            var serviceProvider = new RequiredServiceSupportingProvider();
+		// Assert
+		Assert.IsType<Foo1>(service);
+	}
 
-            // Act
-            var service = serviceProvider.GetRequiredService<IBar>();
+	[Fact]
+	public void ISupportRequiredService_GetRequiredService_Returns_CorrectService() {
+		// Arrange
+		var serviceProvider = new RequiredServiceSupportingProvider();
 
-            // Assert
-            Assert.IsType<Bar1>(service);
-        }
+		// Act
+		var service = serviceProvider.GetRequiredService<IBar>();
 
-        [Fact]
-        public void GetRequiredService_Throws_WhenNoServiceRegistered()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(0);
+		// Assert
+		Assert.IsType<Bar1>(service);
+	}
 
-            // Act + Assert
-            AssertExtensions.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<IFoo>(),
-                $"No service for type '{typeof(IFoo)}' has been registered.");
-        }
+	[Fact]
+	public void GetRequiredService_Throws_WhenNoServiceRegistered() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(0);
 
-        [Fact]
-        public void ISupportRequiredService_GetRequiredService_Throws_WhenNoServiceRegistered()
-        {
-            // Arrange
-            var serviceProvider = new RequiredServiceSupportingProvider();
+		// Act + Assert
+		InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<IFoo>());
+		Assert.Equal(exception.Message, $"No service for type '{typeof(IFoo)}' has been registered.");
+	}
 
-            // Act + Assert
-            AssertExtensions.Throws<RankException>(() => serviceProvider.GetRequiredService<IFoo>());
-        }
+	[Fact]
+	public void ISupportRequiredService_GetRequiredService_Throws_WhenNoServiceRegistered() {
+		// Arrange
+		var serviceProvider = new RequiredServiceSupportingProvider();
 
-        [Fact]
-        public void NonGeneric_GetRequiredService_Throws_WhenNoServiceRegistered()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(0);
+		// Act + Assert
+		Assert.Throws<RankException>(() => serviceProvider.GetRequiredService<IFoo>());
+	}
 
-            // Act + Assert
-            AssertExtensions.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService(typeof(IFoo)),
-                $"No service for type '{typeof(IFoo)}' has been registered.");
-        }
+	[Fact]
+	public void NonGeneric_GetRequiredService_Throws_WhenNoServiceRegistered() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(0);
 
-        [Fact]
-        public void ISupportRequiredService_NonGeneric_GetRequiredService_Throws_WhenNoServiceRegistered()
-        {
-            // Arrange
-            var serviceProvider = new RequiredServiceSupportingProvider();
+		// Act + Assert
+		InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService(typeof(IFoo)));
+		Assert.Equal(exception.Message, $"No service for type '{typeof(IFoo)}' has been registered.");
+	}
 
-            // Act + Assert
-            AssertExtensions.Throws<RankException>(() => serviceProvider.GetRequiredService(typeof(IFoo)));
-        }
+	[Fact]
+	public void ISupportRequiredService_NonGeneric_GetRequiredService_Throws_WhenNoServiceRegistered() {
+		// Arrange
+		var serviceProvider = new RequiredServiceSupportingProvider();
 
-        [Fact]
-        public void GetServices_Returns_AllServices()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(2);
+		// Act + Assert
+		Assert.Throws<RankException>(() => serviceProvider.GetRequiredService(typeof(IFoo)));
+	}
 
-            // Act
-            var services = serviceProvider.GetServices<IFoo>();
+	[Fact]
+	public void GetServices_Returns_AllServices() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(2);
 
-            // Assert
-            Assert.Contains(services, item => item is Foo1);
-            Assert.Contains(services, item => item is Foo2);
-            Assert.Equal(2, services.Count());
-        }
+		// Act
+		var services = serviceProvider.GetServices<IFoo>();
 
-        [Fact]
-        public void NonGeneric_GetServices_Returns_AllServices()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(2);
+		// Assert
+		Assert.Contains(services, item => item is Foo1);
+		Assert.Contains(services, item => item is Foo2);
+		Assert.Equal(2, services.Count());
+	}
 
-            // Act
-            var services = serviceProvider.GetServices(typeof(IFoo));
+	[Fact]
+	public void NonGeneric_GetServices_Returns_AllServices() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(2);
 
-            // Assert
-            Assert.Contains(services, item => item is Foo1);
-            Assert.Contains(services, item => item is Foo2);
-            Assert.Equal(2, services.Count());
-        }
+		// Act
+		var services = serviceProvider.GetServices(typeof(IFoo));
 
-        [Fact]
-        public void GetServices_Returns_SingleService()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(1);
+		// Assert
+		Assert.Contains(services, item => item is Foo1);
+		Assert.Contains(services, item => item is Foo2);
+		Assert.Equal(2, services.Count());
+	}
 
-            // Act
-            var services = serviceProvider.GetServices<IFoo>();
+	[Fact]
+	public void GetServices_Returns_SingleService() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(1);
 
-            // Assert
-            var item = Assert.Single(services);
-            Assert.IsType<Foo1>(item);
-        }
+		// Act
+		var services = serviceProvider.GetServices<IFoo>();
 
-        [Fact]
-        public void NonGeneric_GetServices_Returns_SingleService()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(1);
+		// Assert
+		var item = Assert.Single(services);
+		Assert.IsType<Foo1>(item);
+	}
 
-            // Act
-            var services = serviceProvider.GetServices(typeof(IFoo));
+	[Fact]
+	public void NonGeneric_GetServices_Returns_SingleService() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(1);
 
-            // Assert
-            var item = Assert.Single(services);
-            Assert.IsType<Foo1>(item);
-        }
+		// Act
+		var services = serviceProvider.GetServices(typeof(IFoo));
 
-        [Fact]
-        public void GetServices_Returns_CorrectTypes()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(4);
+		// Assert
+		var item = Assert.Single(services);
+		Assert.IsType<Foo1>(item);
+	}
 
-            // Act
-            var services = serviceProvider.GetServices(typeof(IBar));
+	[Fact]
+	public void GetServices_Returns_CorrectTypes() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(4);
 
-            // Assert
-            foreach (var service in services)
-            {
-                Assert.IsAssignableFrom<IBar>(service);
-            }
-            Assert.Equal(2, services.Count());
-        }
+		// Act
+		var services = serviceProvider.GetServices(typeof(IBar));
 
-        [Fact]
-        public void GetServices_Returns_EmptyArray_WhenNoServicesAvailable()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(0);
+		// Assert
+		foreach (var service in services) {
+			Assert.IsAssignableFrom<IBar>(service);
+		}
+		Assert.Equal(2, services.Count());
+	}
 
-            // Act
-            var services = serviceProvider.GetServices<IFoo>();
+	[Fact]
+	public void GetServices_Returns_EmptyArray_WhenNoServicesAvailable() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(0);
 
-            // Assert
-            Assert.Empty(services);
-            Assert.IsType<IFoo[]>(services);
-        }
+		// Act
+		var services = serviceProvider.GetServices<IFoo>();
 
-        [Fact]
-        public void NonGeneric_GetServices_Returns_EmptyArray_WhenNoServicesAvailable()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(0);
+		// Assert
+		Assert.Empty(services);
+		Assert.IsType<IFoo[]>(services);
+	}
 
-            // Act
-            var services = serviceProvider.GetServices(typeof(IFoo));
+	[Fact]
+	public void NonGeneric_GetServices_Returns_EmptyArray_WhenNoServicesAvailable() {
+		// Arrange
+		var serviceProvider = CreateTestServiceProvider(0);
 
-            // Assert
-            Assert.Empty(services);
-            Assert.IsType<IFoo[]>(services);
-        }
+		// Act
+		var services = serviceProvider.GetServices(typeof(IFoo));
 
-        [Fact]
-        public void GetServices_WithBuildServiceProvider_Returns_EmptyList_WhenNoServicesAvailable()
-        {
-            // Arrange
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IEnumerable<IFoo>>(new List<IFoo>());
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+		// Assert
+		Assert.Empty(services);
+		Assert.IsType<IFoo[]>(services);
+	}
 
-            // Act
-            var services = serviceProvider.GetServices<IFoo>();
+	[Fact]
+	public void GetServices_WithBuildServiceProvider_Returns_EmptyList_WhenNoServicesAvailable() {
+		// Arrange
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddSingleton<IEnumerable<IFoo>>(new List<IFoo>());
+		var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            // Assert
-            Assert.Empty(services);
-            Assert.IsType<List<IFoo>>(services);
-        }
+		// Act
+		var services = serviceProvider.GetServices<IFoo>();
 
-        [Fact]
-        public void NonGeneric_GetServices_WithBuildServiceProvider_Returns_EmptyList_WhenNoServicesAvailable()
-        {
-            // Arrange
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IEnumerable<IFoo>>(new List<IFoo>());
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+		// Assert
+		Assert.Empty(services);
+		Assert.IsType<List<IFoo>>(services);
+	}
 
-            // Act
-            var services = serviceProvider.GetServices(typeof(IFoo));
+	[Fact]
+	public void NonGeneric_GetServices_WithBuildServiceProvider_Returns_EmptyList_WhenNoServicesAvailable() {
+		// Arrange
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddSingleton<IEnumerable<IFoo>>(new List<IFoo>());
+		var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            // Assert
-            Assert.Empty(services);
-            Assert.IsType<List<IFoo>>(services);
-        }
+		// Act
+		var services = serviceProvider.GetServices(typeof(IFoo));
 
-        [Fact]
-        public async Task CreateAsyncScope_Returns_AsyncServiceScope_Wrapping_ServiceScope()
-        {
-            // Arrange
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddScoped<IFoo, Foo1>();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+		// Assert
+		Assert.Empty(services);
+		Assert.IsType<List<IFoo>>(services);
+	}
 
-            await using var scope = serviceProvider.CreateAsyncScope();
+	[Fact]
+	public async Task CreateAsyncScope_Returns_AsyncServiceScope_Wrapping_ServiceScope() {
+		// Arrange
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddScoped<IFoo, Foo1>();
+		var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            // Act
-            var service = scope.ServiceProvider.GetService<IFoo>();
+		await using var scope = serviceProvider.CreateAsyncScope();
 
-            // Assert
-            Assert.IsType<Foo1>(service);
-        }
+		// Act
+		var service = scope.ServiceProvider.GetService<IFoo>();
 
-        [Fact]
-        public async Task CreateAsyncScope_Returns_AsyncServiceScope_Wrapping_ServiceScope_For_IServiceScopeFactory()
-        {
-            // Arrange
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddScoped<IFoo, Foo1>();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var factory = serviceProvider.GetService<IServiceScopeFactory>();
+		// Assert
+		Assert.IsType<Foo1>(service);
+	}
 
-            await using var scope = factory.CreateAsyncScope();
+	[Fact]
+	public async Task CreateAsyncScope_Returns_AsyncServiceScope_Wrapping_ServiceScope_For_IServiceScopeFactory() {
+		// Arrange
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddScoped<IFoo, Foo1>();
+		var serviceProvider = serviceCollection.BuildServiceProvider();
+		var factory = serviceProvider.GetService<IServiceScopeFactory>()!;
 
-            // Act
-            var service = scope.ServiceProvider.GetService<IFoo>();
+		await using var scope = factory.CreateAsyncScope();
 
-            // Assert
-            Assert.IsType<Foo1>(service);
-        }
+		// Act
+		var service = scope.ServiceProvider.GetService<IFoo>();
 
-        private static IServiceProvider CreateTestServiceProvider(int count)
-        {
-            var serviceCollection = new ServiceCollection();
+		// Assert
+		Assert.IsType<Foo1>(service);
+	}
 
-            if (count > 0)
-            {
-                serviceCollection.AddTransient<IFoo, Foo1>();
-            }
+	private static IServiceProvider CreateTestServiceProvider(int count) {
+		var serviceCollection = new ServiceCollection();
 
-            if (count > 1)
-            {
-                serviceCollection.AddTransient<IFoo, Foo2>();
-            }
+		if (count > 0) {
+			serviceCollection.AddTransient<IFoo, Foo1>();
+		}
 
-            if (count > 2)
-            {
-                serviceCollection.AddTransient<IBar, Bar1>();
-            }
+		if (count > 1) {
+			serviceCollection.AddTransient<IFoo, Foo2>();
+		}
 
-            if (count > 3)
-            {
-                serviceCollection.AddTransient<IBar, Bar2>();
-            }
+		if (count > 2) {
+			serviceCollection.AddTransient<IBar, Bar1>();
+		}
 
-            return serviceCollection.BuildServiceProvider();
-        }
+		if (count > 3) {
+			serviceCollection.AddTransient<IBar, Bar2>();
+		}
 
-        public interface IFoo { }
+		return serviceCollection.BuildServiceProvider();
+	}
 
-        public class Foo1 : IFoo { }
+	public interface IFoo { }
 
-        public class Foo2 : IFoo { }
+	public class Foo1 : IFoo { }
 
-        public interface IBar { }
+	public class Foo2 : IFoo { }
 
-        public class Bar1 : IBar { }
+	public interface IBar { }
 
-        public class Bar2 : IBar { }
+	public class Bar1 : IBar { }
 
-        private class RequiredServiceSupportingProvider : IServiceProvider, ISupportRequiredService
-        {
-            object ISupportRequiredService.GetRequiredService(Type serviceType)
-            {
-                if (serviceType == typeof(IBar))
-                {
-                    return new Bar1();
-                }
+	public class Bar2 : IBar { }
 
-                throw new RankException();
-            }
+	private class RequiredServiceSupportingProvider : IServiceProvider, ISupportRequiredService {
+		object ISupportRequiredService.GetRequiredService(Type serviceType) {
+			if (serviceType == typeof(IBar)) {
+				return new Bar1();
+			}
 
-            object IServiceProvider.GetService(Type serviceType)
-            {
-                throw new NotSupportedException();
-            }
-        }
-    }
+			throw new RankException();
+		}
+
+		object IServiceProvider.GetService(Type serviceType) {
+			throw new NotSupportedException();
+		}
+	}
 }

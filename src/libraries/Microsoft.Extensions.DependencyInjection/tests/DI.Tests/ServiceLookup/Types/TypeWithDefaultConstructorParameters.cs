@@ -3,25 +3,20 @@
 
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 
-namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
-{
-    public class TypeWithDefaultConstructorParameters
-    {
-        public TypeWithDefaultConstructorParameters(
-            IFakeMultipleService multipleService,
-            IFakeService fakeService = null)
-        {
-        }
+namespace Microsoft.Extensions.DependencyInjection.ServiceLookup;
 
-        public TypeWithDefaultConstructorParameters(
-            IFactoryService factoryService)
-        {
-        }
+public class TypeWithDefaultConstructorParameters {
+	public TypeWithDefaultConstructorParameters(
+		IFakeMultipleService multipleService,
+		IFakeService? fakeService = null) {
+	}
 
-        public TypeWithDefaultConstructorParameters(
-            IFactoryService factoryService,
-            IFakeScopedService singletonService = null)
-        {
-        }
-    }
+	public TypeWithDefaultConstructorParameters(
+		IFactoryService factoryService) {
+	}
+
+	public TypeWithDefaultConstructorParameters(
+		IFactoryService factoryService,
+		IFakeScopedService? singletonService = null) {
+	}
 }

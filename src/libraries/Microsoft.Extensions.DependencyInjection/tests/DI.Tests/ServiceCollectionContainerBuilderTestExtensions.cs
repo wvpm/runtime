@@ -4,30 +4,25 @@
 using System;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 
-namespace Microsoft.Extensions.DependencyInjection.Tests
-{
-    internal static class ServiceCollectionContainerBuilderTestExtensions
-    {
-        public static ServiceProvider BuildServiceProvider(this IServiceCollection services, ServiceProviderMode mode, ServiceProviderOptions options = null)
-        {
-            options ??= ServiceProviderOptions.Default;
+namespace Microsoft.Extensions.DependencyInjection.Tests;
 
-            if (mode == ServiceProviderMode.Default)
-            {
-                return services.BuildServiceProvider(options);
-            }
+internal static class ServiceCollectionContainerBuilderTestExtensions {
+	public static ServiceProvider BuildServiceProvider(this IServiceCollection services, ServiceProviderMode mode, ServiceProviderOptions? options = null) {
+		options ??= ServiceProviderOptions.Default;
 
-            var provider = new ServiceProvider(services, ServiceProviderOptions.Default);
-            ServiceProviderEngine engine = mode switch
-            {
-                ServiceProviderMode.Dynamic => new DynamicServiceProviderEngine(provider),
-                ServiceProviderMode.Runtime => RuntimeServiceProviderEngine.Instance,
-                ServiceProviderMode.Expressions => new ExpressionsServiceProviderEngine(provider),
-                ServiceProviderMode.ILEmit => new ILEmitServiceProviderEngine(provider),
-                _ => throw new NotSupportedException()
-            };
-            provider._engine = engine;
-            return provider;
-        }
-    }
+		if (mode == ServiceProviderMode.Default) {
+			return services.BuildServiceProvider(options);
+		}
+
+		var provider = new ServiceProvider(services, ServiceProviderOptions.Default);
+		ServiceProviderEngine engine = mode switch {
+			ServiceProviderMode.Dynamic => new DynamicServiceProviderEngine(provider),
+			ServiceProviderMode.Runtime => RuntimeServiceProviderEngine.Instance,
+			ServiceProviderMode.Expressions => new ExpressionsServiceProviderEngine(provider),
+			ServiceProviderMode.ILEmit => new ILEmitServiceProviderEngine(provider),
+			_ => throw new NotSupportedException()
+		};
+		provider._engine = engine;
+		return provider;
+	}
 }

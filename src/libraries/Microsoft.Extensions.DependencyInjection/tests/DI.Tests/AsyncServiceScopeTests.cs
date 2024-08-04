@@ -5,108 +5,93 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Extensions.DependencyInjection.Tests
-{
-    public class AsyncServiceScopeTests
-    {
-        [Fact]
-        public void ThrowsIfServiceScopeIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(() => new AsyncServiceScope(null));
-            Assert.Equal("serviceScope", exception.ParamName);
-        }
+namespace Microsoft.Extensions.DependencyInjection.Tests;
 
-        [Fact]
-        public void ReturnsServiceProviderFromWrappedScope()
-        {
-            var wrappedScope = new FakeSyncServiceScope();
-            var asyncScope = new AsyncServiceScope(wrappedScope);
+public class AsyncServiceScopeTests {
+	[Fact]
+	public void ThrowsIfServiceScopeIsNull() {
+		var exception = Assert.Throws<ArgumentNullException>(() => new AsyncServiceScope(null!));
+		Assert.Equal("serviceScope", exception.ParamName);
+	}
 
-            Assert.Same(wrappedScope.ServiceProvider, asyncScope.ServiceProvider);
-        }
+	[Fact]
+	public void ReturnsServiceProviderFromWrappedScope() {
+		var wrappedScope = new FakeSyncServiceScope();
+		var asyncScope = new AsyncServiceScope(wrappedScope);
 
-        [Fact]
-        public void CallsDisposeOnWrappedSyncScopeOnDispose()
-        {
-            var wrappedScope = new FakeSyncServiceScope();
-            var asyncScope = new AsyncServiceScope(wrappedScope);
+		Assert.Same(wrappedScope.ServiceProvider, asyncScope.ServiceProvider);
+	}
 
-            asyncScope.Dispose();
+	[Fact]
+	public void CallsDisposeOnWrappedSyncScopeOnDispose() {
+		var wrappedScope = new FakeSyncServiceScope();
+		var asyncScope = new AsyncServiceScope(wrappedScope);
 
-            Assert.True(wrappedScope.DisposeCalled);
-        }
+		asyncScope.Dispose();
 
-        [Fact]
-        public async Task CallsDisposeOnWrappedSyncScopeOnDisposeAsync()
-        {
-            var wrappedScope = new FakeSyncServiceScope();
-            var asyncScope = new AsyncServiceScope(wrappedScope);
+		Assert.True(wrappedScope.DisposeCalled);
+	}
 
-            await asyncScope.DisposeAsync();
+	[Fact]
+	public async Task CallsDisposeOnWrappedSyncScopeOnDisposeAsync() {
+		var wrappedScope = new FakeSyncServiceScope();
+		var asyncScope = new AsyncServiceScope(wrappedScope);
 
-            Assert.True(wrappedScope.DisposeCalled);
-        }
+		await asyncScope.DisposeAsync();
 
-        [Fact]
-        public void CallsDisposeOnWrappedAsyncScopeOnDispose()
-        {
-            var wrappedScope = new FakeAsyncServiceScope();
-            var asyncScope = new AsyncServiceScope(wrappedScope);
+		Assert.True(wrappedScope.DisposeCalled);
+	}
 
-            asyncScope.Dispose();
+	[Fact]
+	public void CallsDisposeOnWrappedAsyncScopeOnDispose() {
+		var wrappedScope = new FakeAsyncServiceScope();
+		var asyncScope = new AsyncServiceScope(wrappedScope);
 
-            Assert.True(wrappedScope.DisposeCalled);
-            Assert.False(wrappedScope.DisposeAsyncCalled);
-        }
+		asyncScope.Dispose();
 
-        [Fact]
-        public async Task CallsDisposeAsyncOnWrappedSyncScopeOnDisposeAsync()
-        {
-            var wrappedScope = new FakeAsyncServiceScope();
-            var asyncScope = new AsyncServiceScope(wrappedScope);
+		Assert.True(wrappedScope.DisposeCalled);
+		Assert.False(wrappedScope.DisposeAsyncCalled);
+	}
 
-            await asyncScope.DisposeAsync();
+	[Fact]
+	public async Task CallsDisposeAsyncOnWrappedSyncScopeOnDisposeAsync() {
+		var wrappedScope = new FakeAsyncServiceScope();
+		var asyncScope = new AsyncServiceScope(wrappedScope);
 
-            Assert.False(wrappedScope.DisposeCalled);
-            Assert.True(wrappedScope.DisposeAsyncCalled);
-        }
+		await asyncScope.DisposeAsync();
 
-        public class FakeServiceProvider : IServiceProvider
-        {
-            public object? GetService(Type serviceType) => throw new NotImplementedException();
-        }
+		Assert.False(wrappedScope.DisposeCalled);
+		Assert.True(wrappedScope.DisposeAsyncCalled);
+	}
 
-        public class FakeSyncServiceScope : IServiceScope
-        {
-            public FakeSyncServiceScope()
-            {
-                ServiceProvider = new FakeServiceProvider();
-            }
+	public class FakeServiceProvider : IServiceProvider {
+		public object? GetService(Type serviceType) => throw new NotImplementedException();
+	}
 
-            public IServiceProvider ServiceProvider { get; }
+	public class FakeSyncServiceScope : IServiceScope {
+		public FakeSyncServiceScope() {
+			ServiceProvider = new FakeServiceProvider();
+		}
 
-            public bool DisposeCalled { get; private set; }
+		public IServiceProvider ServiceProvider { get; }
 
-            public void Dispose()
-            {
-                DisposeCalled = true;
-            }
-        }
+		public bool DisposeCalled { get; private set; }
 
-        public class FakeAsyncServiceScope : FakeSyncServiceScope, IAsyncDisposable
-        {
-            public FakeAsyncServiceScope() : base()
-            {
-            }
+		public void Dispose() {
+			DisposeCalled = true;
+		}
+	}
 
-            public bool DisposeAsyncCalled { get; private set; }
+	public class FakeAsyncServiceScope : FakeSyncServiceScope, IAsyncDisposable {
+		public FakeAsyncServiceScope() : base() {
+		}
 
-            public ValueTask DisposeAsync()
-            {
-                DisposeAsyncCalled = true;
+		public bool DisposeAsyncCalled { get; private set; }
 
-                return default;
-            }
-        }
-    }
+		public ValueTask DisposeAsync() {
+			DisposeAsyncCalled = true;
+
+			return default;
+		}
+	}
 }

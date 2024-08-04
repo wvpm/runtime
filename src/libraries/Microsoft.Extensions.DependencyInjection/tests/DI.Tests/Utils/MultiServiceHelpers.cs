@@ -6,48 +6,39 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.Extensions.DependencyInjection.Tests
-{
-    public static class MultiServiceHelpers
-    {
-        public static IEnumerable GetMultiService(Type collectionType, Func<Type, IEnumerable> getAllServices)
-        {
-            if (IsGenericIEnumerable(collectionType))
-            {
-                Type serviceType = FirstGenericArgument(collectionType);
-                return Cast(getAllServices(serviceType), serviceType);
-            }
+namespace Microsoft.Extensions.DependencyInjection.Tests;
 
-            return null;
-        }
+public static class MultiServiceHelpers {
+	public static IEnumerable? GetMultiService(Type collectionType, Func<Type, IEnumerable> getAllServices) {
+		if (IsGenericIEnumerable(collectionType)) {
+			Type serviceType = FirstGenericArgument(collectionType);
+			return Cast(getAllServices(serviceType), serviceType);
+		}
 
-        private static IEnumerable Cast(IEnumerable collection, Type castItemsTo)
-        {
-            IList castedCollection = CreateEmptyList(castItemsTo);
+		return null;
+	}
 
-            foreach (object item in collection)
-            {
-                castedCollection.Add(item);
-            }
+	private static IEnumerable Cast(IEnumerable collection, Type castItemsTo) {
+		IList castedCollection = CreateEmptyList(castItemsTo);
 
-            return castedCollection;
-        }
+		foreach (object item in collection) {
+			castedCollection.Add(item);
+		}
 
-        private static bool IsGenericIEnumerable(Type type)
-        {
-            return type.GetTypeInfo().IsGenericType &&
-                   type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
-        }
+		return castedCollection;
+	}
 
-        private static Type FirstGenericArgument(Type type)
-        {
-            return type.GetTypeInfo().GenericTypeArguments[0];
-        }
+	private static bool IsGenericIEnumerable(Type type) {
+		return type.GetTypeInfo().IsGenericType &&
+			   type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
+	}
 
-        private static IList CreateEmptyList(Type innerType)
-        {
-            Type listType = typeof(List<>).MakeGenericType(innerType);
-            return (IList)Activator.CreateInstance(listType);
-        }
-    }
+	private static Type FirstGenericArgument(Type type) {
+		return type.GetTypeInfo().GenericTypeArguments[0];
+	}
+
+	private static IList CreateEmptyList(Type innerType) {
+		Type listType = typeof(List<>).MakeGenericType(innerType);
+		return (IList)Activator.CreateInstance(listType)!;
+	}
 }
