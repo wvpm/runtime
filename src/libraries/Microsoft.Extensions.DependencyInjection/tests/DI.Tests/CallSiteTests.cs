@@ -267,23 +267,24 @@ public class CallSiteTests {
 	[Fact]
 	public void CallSiteFactoryResolvesIEnumerableOfOpenGenericServiceAfterResolvingClosedImplementation() {
 		IServiceCollection descriptors = new ServiceCollection();
-		descriptors.Add(ServiceDescriptor.Scoped(typeof(IFakeOpenGenericService<int>), typeof(FakeIntService)));
+		descriptors.Add(new ServiceDescriptor(typeof(string), "root"));
+		descriptors.Add(ServiceDescriptor.Scoped(typeof(IFakeOpenGenericService<string>), typeof(FakeStringService)));
 		descriptors.Add(ServiceDescriptor.Scoped(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>)));
 
 		ServiceProvider provider = descriptors.BuildServiceProvider();
 
-		IFakeOpenGenericService<int> processor = provider.GetService<IFakeOpenGenericService<int>>()!;
-		IEnumerable<IFakeOpenGenericService<int>> processors = provider.GetService<IEnumerable<IFakeOpenGenericService<int>>>()!;
+		IFakeOpenGenericService<string> processor = provider.GetService<IFakeOpenGenericService<string>>()!;
+		IEnumerable<IFakeOpenGenericService<string>> processors = provider.GetService<IEnumerable<IFakeOpenGenericService<string>>>()!;
 
 		Type[] implementationTypes = processors.Select(p => p.GetType()).ToArray();
-		Assert.Equal(typeof(FakeIntService), processor.GetType());
+		Assert.Equal(typeof(FakeStringService), processor.GetType());
 		Assert.Equal(2, implementationTypes.Length);
-		Assert.Equal(typeof(FakeIntService), implementationTypes[0]);
-		Assert.Equal(typeof(FakeOpenGenericService<int>), implementationTypes[1]);
+		Assert.Equal(typeof(FakeStringService), implementationTypes[0]);
+		Assert.Equal(typeof(FakeOpenGenericService<string>), implementationTypes[1]);
 	}
 
-	private class FakeIntService : IFakeOpenGenericService<int> {
-		public int Value => 0;
+	private class FakeStringService : IFakeOpenGenericService<string> {
+		public string Value => nameof(FakeStringService);
 	}
 
 	private interface IServiceG {
