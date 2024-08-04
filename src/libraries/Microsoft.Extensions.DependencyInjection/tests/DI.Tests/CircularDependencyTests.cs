@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
 
@@ -194,17 +195,23 @@ public class CircularDependencyTests {
 		Assert.Equal(expectedMessage, exception.Message);
 	}
 
-	[Fact]
-	public async Task CircularDependencyDoesNotCauseDeadlock() {
+	[Theory]
+	[InlineData(ServiceLifetime.Singleton)]
+	[InlineData(ServiceLifetime.Scoped)]
+	[InlineData(ServiceLifetime.Transient)]
+	public async Task CircularDependencyDoesNotCauseDeadlock(ServiceLifetime serviceLifetime) {
 		Task task = Task.Run(() => {
 			ServiceCollection serviceCollection = new();
-			serviceCollection.AddSingleton<ServiceWithDependency>();
-			serviceCollection.AddSingleton<IDummy>(p => p.GetRequiredService<ServiceWithDependency>());
+			serviceCollection.Add(new ServiceDescriptor(typeof(ServiceWithDependency), typeof(ServiceWithDependency), serviceLifetime));
+			serviceCollection.Add(new ServiceDescriptor(typeof(IDummy), p => p.GetRequiredService<ServiceWithDependency>(), serviceLifetime));
 			using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions() {
 				ValidateOnBuild = true,
 				ValidateScopes = true
 			});
-			var dummy = serviceProvider.GetService<IDummy>(); //never completes
+
+			using IServiceScope serviceScope = serviceProvider.CreateScope();
+			InvalidOperationException invalidOperationException = Assert.Throws<InvalidOperationException>(() => { var dummy = serviceScope.ServiceProvider.GetService<IDummy>(); });
+			Assert.Equal(invalidOperationException.Message, SR.Format(SR.CircularDependencyException, typeof(IDummy)));
 		});
 
 		Task firstTask = await Task.WhenAny([task, Task.Delay(100)]);
