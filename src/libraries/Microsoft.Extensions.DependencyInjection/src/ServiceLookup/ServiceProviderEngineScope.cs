@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup;
 [DebuggerDisplay("{DebuggerToString(),nq}")]
 [DebuggerTypeProxy(typeof(ServiceProviderEngineScopeDebugView))]
 internal sealed class ServiceProviderEngineScope : IServiceScope, IServiceProvider, IKeyedServiceProvider, IAsyncDisposable, IServiceScopeFactory {
-	private readonly HashSet<Type> _tryingToResolve = [];
+	private readonly HashSet<ServiceIdentifier> _tryingToResolve = [];
 	// For testing and debugging only
 	internal IList<object> Disposables => _disposables ?? (IList<object>)Array.Empty<object>();
 
@@ -38,30 +38,20 @@ internal sealed class ServiceProviderEngineScope : IServiceScope, IServiceProvid
 
 	internal ServiceProvider RootProvider { get; }
 
-	public object? GetService(Type serviceType) {
-		if (_disposed) {
-			ThrowHelper.ThrowObjectDisposedException();
-		}
-		using (GuardAgainstCircularDependency(serviceType)) {
-			return RootProvider.GetService(ServiceIdentifier.FromServiceType(serviceType), this);
-		}
-	}
+	public object? GetService(Type serviceType) => GetServiceProtectAgainstCircle(ServiceIdentifier.FromServiceType(serviceType));
 
-	public object? GetKeyedService(Type serviceType, object? serviceKey) {
-		if (_disposed) {
-			ThrowHelper.ThrowObjectDisposedException();
-		}
-		using (GuardAgainstCircularDependency(serviceType)) {
-			return RootProvider.GetKeyedService(serviceType, serviceKey, this);
-		}
-	}
+	public object? GetKeyedService(Type serviceType, object? serviceKey) => GetServiceProtectAgainstCircle(new(serviceKey, serviceType));
 
-	public object GetRequiredKeyedService(Type serviceType, object? serviceKey) {
+	public object GetRequiredKeyedService(Type serviceType, object? serviceKey)
+	=> GetServiceProtectAgainstCircle(new(serviceKey, serviceType))
+	?? throw new InvalidOperationException(SR.Format(SR.NoServiceRegistered, serviceType));
+
+	private object? GetServiceProtectAgainstCircle(ServiceIdentifier serviceIdentifier) {
 		if (_disposed) {
 			ThrowHelper.ThrowObjectDisposedException();
 		}
-		using (GuardAgainstCircularDependency(serviceType)) {
-			return RootProvider.GetRequiredKeyedService(serviceType, serviceKey, this);
+		using (GuardAgainstCircularDependency(serviceIdentifier)) {
+			return RootProvider.GetService(serviceIdentifier, this);
 		}
 	}
 
@@ -219,17 +209,17 @@ internal sealed class ServiceProviderEngineScope : IServiceScope, IServiceProvid
 		public bool IsScope => !_serviceProvider.IsRootScope;
 	}
 
-	private IDisposable GuardAgainstCircularDependency(Type serviceType) {
-		if (!_tryingToResolve.Add(serviceType)) {
-			throw new InvalidOperationException(SR.Format(SR.CircularDependencyException, serviceType));
+	private SetRemover GuardAgainstCircularDependency(ServiceIdentifier serviceIdentifier) {
+		if (!_tryingToResolve.Add(serviceIdentifier)) {
+			throw new InvalidOperationException(SR.Format(SR.CircularDependencyException, serviceIdentifier));
 		}
 
-		return new SetRemover(serviceType, _tryingToResolve);
+		return new(serviceIdentifier, _tryingToResolve);
 	}
 
-	private sealed class SetRemover(Type _type, HashSet<Type> _tryingToResolve) : IDisposable {
+	private sealed class SetRemover(ServiceIdentifier _serviceIdentifier, HashSet<ServiceIdentifier> _tryingToResolve) : IDisposable {
 		public void Dispose() {
-			_tryingToResolve.Remove(_type);
+			_tryingToResolve.Remove(_serviceIdentifier);
 		}
 	}
 }
